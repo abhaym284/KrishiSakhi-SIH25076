@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Onboarding - 🌱 KISORA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background: var(--bg-cream); min-height: 100vh; display: flex; flex-direction: column;">
+
+    <header style="padding: 20px 0; border-bottom: 1px solid var(--border-light); background: #ffffff;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="index.html" class="brand-logo">
+                <span class="brand-icon">🌱</span>
+                <span data-i18n="brandName">KISORA</span>
+            </a>
+            <div style="font-weight: 700; color: var(--primary-main);" id="stepIndicator">Step 1 of 4</div>
+        </div>
+    </header>
+
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+        <div class="card" style="max-width: 580px; width: 100%; padding: 40px; position: relative;">
+
+            <!-- Step 1: Language -->
+            <div id="step1" class="onboard-step">
+                <span style="font-size: 2.5rem;">🌐</span>
+                <h2 style="margin: 12px 0 20px 0;" data-i18n="onboardStep1Title">Choose your website language</h2>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn-secondary" style="justify-content: flex-start; padding: 16px; font-size: 1.05rem;" onclick="selectLang('en')">
+                        🇬🇧 English (Default)
+                    </button>
+                    <button class="btn-secondary" style="justify-content: flex-start; padding: 16px; font-size: 1.05rem;" onclick="selectLang('hi')">
+                        🇮🇳 हिन्दी (Hindi)
+                    </button>
+                    <button class="btn-secondary" style="justify-content: flex-start; padding: 16px; font-size: 1.05rem;" onclick="selectLang('gu')">
+                        🇮🇳 ગુજરાતી (Gujarati)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Location -->
+            <div id="step2" class="onboard-step" style="display: none;">
+                <span style="font-size: 2.5rem;">📍</span>
+                <h2 style="margin: 12px 0 20px 0;" data-i18n="onboardStep2Title">Where do you farm?</h2>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="labelState">State</label>
+                    <input type="text" id="obState" class="form-control" value="Gujarat" placeholder="e.g. Gujarat">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="labelDistrict">District</label>
+                    <input type="text" id="obDistrict" class="form-control" value="Anand" placeholder="e.g. Anand">
+                </div>
+            </div>
+
+            <!-- Step 3: Crop -->
+            <div id="step3" class="onboard-step" style="display: none;">
+                <span style="font-size: 2.5rem;">🌾</span>
+                <h2 style="margin: 12px 0 20px 0;" data-i18n="onboardStep3Title">What do you grow?</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button class="btn-secondary" onclick="selectCrop('Rice')">🌾 Rice / धान / ડાંગર</button>
+                    <button class="btn-secondary" onclick="selectCrop('Wheat')">🌾 Wheat / गेहूं / ઘઉં</button>
+                    <button class="btn-secondary" onclick="selectCrop('Cotton')">🌿 Cotton / कपास / કપાસ</button>
+                    <button class="btn-secondary" onclick="selectCrop('Groundnut')">🥜 Groundnut / मँगफली / મગફળી</button>
+                    <button class="btn-secondary" onclick="selectCrop('Vegetables')">🥬 Vegetables / सब्जियां / શાકભાજી</button>
+                    <button class="btn-secondary" onclick="selectCrop('Other')">🌱 Other / अन्य / અન્ય</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Ready -->
+            <div id="step4" class="onboard-step" style="display: none; text-align: center;">
+                <span style="font-size: 3.5rem;">🎉</span>
+                <h2 style="margin: 12px 0;" data-i18n="onboardStep4Title">You're ready!</h2>
+                <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 28px;" data-i18n="onboardStep4Desc">
+                    Let's solve your farming problems together with KISORA.
+                </p>
+                <a href="ask.html" class="btn-primary" style="padding: 16px 32px; font-size: 1.1rem;" data-i18n="btnStartKisora">Start with KISORA →</a>
+            </div>
+
+            <!-- Wizard Controls -->
+            <div id="wizardControls" style="display: flex; justify-content: space-between; margin-top: 30px; border-top: 1px solid var(--border-light); padding-top: 20px;">
+                <button id="btnBack" class="btn-secondary" onclick="prevStep()" style="visibility: hidden;" data-i18n="btnBack">← Back</button>
+                <button id="btnNext" class="btn-primary" onclick="nextStep()" data-i18n="btnNext">Next →</button>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentStep = 1;
+        let selectedCrop = "Rice";
+
+        function selectLang(lang) {
+            i18n.setLang(lang);
+            nextStep();
+        }
+
+        function selectCrop(crop) {
+            selectedCrop = crop;
+            nextStep();
+        }
+
+        function updateStepView() {
+            document.querySelectorAll('.onboard-step').forEach((el, idx) => {
+                el.style.display = (idx + 1 === currentStep) ? 'block' : 'none';
+            });
+
+            document.getElementById('stepIndicator').innerText = `Step ${currentStep} of 4`;
+
+            const btnBack = document.getElementById('btnBack');
+            const btnNext = document.getElementById('btnNext');
+            const wizardControls = document.getElementById('wizardControls');
+
+            btnBack.style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+
+            if (currentStep === 4) {
+                wizardControls.style.display = 'none';
+            } else {
+                wizardControls.style.display = 'flex';
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < 4) {
+                currentStep++;
+                updateStepView();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepView();
+            }
+        }
+    </script>
+</body>
+</html>

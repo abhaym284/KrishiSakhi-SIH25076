@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Farming Questions - 🌱 KISORA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-inner">
+            <a href="index.html" class="brand-logo">
+                <span class="brand-icon">🌱</span>
+                <span data-i18n="brandName">KISORA</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link" data-i18n="navHome">Home</a></li>
+                <li><a href="ask.html" class="nav-link" data-i18n="navAsk">Ask KISORA</a></li>
+                <li><a href="crops.html" class="nav-link" data-i18n="navCrops">Crop Guide</a></li>
+                <li><a href="schemes.html" class="nav-link" data-i18n="navSchemes">Farmer Schemes</a></li>
+                <li><a href="history.html" class="nav-link active" data-i18n="navHistory">My History</a></li>
+            </ul>
+
+            <div class="nav-right">
+                <div class="website-lang-picker">
+                    <span>🌐</span>
+                    <select id="websiteLangSelect" onchange="i18n.setLang(this.value)">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="gu">ગુજરાતી</option>
+                    </select>
+                </div>
+
+                <div id="navAuthArea">
+                    <a href="login.html" class="btn-primary" data-i18n="navLogin">Login / Sign Up</a>
+                </div>
+
+                <button class="mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+            </div>
+        </div>
+
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="index.html" class="nav-link" data-i18n="navHome">Home</a>
+            <a href="ask.html" class="nav-link" data-i18n="navAsk">Ask KISORA</a>
+            <a href="crops.html" class="nav-link" data-i18n="navCrops">Crop Guide</a>
+            <a href="schemes.html" class="nav-link" data-i18n="navSchemes">Farmer Schemes</a>
+            <a href="history.html" class="nav-link active" data-i18n="navHistory">My History</a>
+            <a href="saved.html" class="nav-link" data-i18n="navSaved">Saved Advice</a>
+            <a href="login.html" class="btn-primary" data-i18n="navLogin" style="text-align: center; margin-top: 10px;">Login / Sign Up</a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div style="background: linear-gradient(180deg, #e8f5e9 0%, var(--bg-cream) 100%); padding: 40px 0 20px 0; text-align: center;">
+        <div class="container">
+            <h1 style="font-size: 2.2rem; margin-bottom: 6px;" data-i18n="historyTitle">My Farming Questions</h1>
+            <p style="color: var(--text-muted); font-size: 1rem;" data-i18n="historySubtitle">Review your past queries, crop advice, and recommendations.</p>
+        </div>
+    </div>
+
+    <main class="container" style="padding: 40px 20px;">
+        <div class="card" style="margin-bottom: 24px; padding: 20px;">
+            <input type="text" id="searchHistory" class="form-control" placeholder="Search questions..." oninput="renderHistoryList()">
+        </div>
+
+        <div id="historyList"></div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function renderHistoryList() {
+            const query = document.getElementById('searchHistory').value.toLowerCase();
+            const history = authService.getHistory();
+            const container = document.getElementById('historyList');
+
+            const filtered = history.filter(h => h.question.toLowerCase().includes(query) || h.crop.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="text-align: center; padding: 40px;">
+                        <span style="font-size: 3rem;">📜</span>
+                        <h3 style="margin-top: 12px; margin-bottom: 8px;" data-i18n="emptyHistory">You haven't asked KISORA anything yet.</h3>
+                        <a href="ask.html" class="btn-primary" style="margin-top: 12px;" data-i18n="btnAskFirst">Ask Your First Question →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => `
+                <div class="card" style="margin-bottom: 20px; padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <span class="badge">🌾 ${item.crop.toUpperCase()} • ${item.date}</span>
+                        <button class="chip" style="background: #ffebee; color: #c62828;" onclick="deleteHistory('${item.id}')">🗑️ Delete</button>
+                    </div>
+                    <h3 style="font-size: 1.15rem; margin-bottom: 12px; color: var(--primary-deep);">"${item.question}"</h3>
+                    <p style="color: var(--text-dark); background: var(--bg-cream); padding: 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-main);">
+                        ${item.advisory?.summary || ''}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function deleteHistory(id) {
+            authService.deleteHistoryItem(id);
+            showToast("Question deleted from history");
+            renderHistoryList();
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('open');
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>✓</span> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHistoryList();
+            const user = authService.getUser();
+            const navAuthArea = document.getElementById('navAuthArea');
+            if (user && navAuthArea) {
+                navAuthArea.innerHTML = `
+                    <div class="user-dropdown">
+                        <button class="user-avatar-btn" onclick="toggleUserDropdown()">
+                            <span>👨‍🌾</span>
+                            <span>${user.name}</span>
+                            <small>▼</small>
+                        </button>
+                        <div class="dropdown-menu" id="userDropdownMenu">
+                            <a href="dashboard.html" class="dropdown-item">📊 <span data-i18n="navDashboard">Dashboard</span></a>
+                            <a href="profile.html" class="dropdown-item">👤 <span data-i18n="navProfile">Profile</span></a>
+                            <a href="history.html" class="dropdown-item">📜 <span data-i18n="navHistory">My Questions</span></a>
+                            <a href="saved.html" class="dropdown-item">❤️ <span data-i18n="navSaved">Saved Advice</span></a>
+                            <a href="settings.html" class="dropdown-item">⚙️ <span data-i18n="navSettings">Settings</span></a>
+                            <a href="#" onclick="authService.logout()" class="dropdown-item" style="color: #e63946;">🚪 <span data-i18n="navLogout">Logout</span></a>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
